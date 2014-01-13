@@ -122,6 +122,7 @@ private:
 
 		// The texture this character renders from.
 		int texture_index;
+		int local_texture_index;
 	};
 
 	typedef std::unordered_map< word, Character > CharacterMap;
