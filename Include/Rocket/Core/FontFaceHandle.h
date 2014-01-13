@@ -28,14 +28,14 @@
 #ifndef ROCKETCOREFONTFACEHANDLE_H
 #define ROCKETCOREFONTFACEHANDLE_H
 
-#include "../../Include/Rocket/Core/ReferenceCountable.h"
-#include "UnicodeRange.h"
-#include "../../Include/Rocket/Core/Font.h"
-#include "../../Include/Rocket/Core/FontEffect.h"
-#include "../../Include/Rocket/Core/FontGlyph.h"
-#include "../../Include/Rocket/Core/Geometry.h"
-#include "../../Include/Rocket/Core/String.h"
-#include "../../Include/Rocket/Core/Texture.h"
+#include <Rocket/Core/ReferenceCountable.h>
+#include <Rocket/Core/UnicodeRange.h>
+#include <Rocket/Core/Font.h>
+#include <Rocket/Core/FontEffect.h>
+#include <Rocket/Core/FontGlyph.h>
+#include <Rocket/Core/Geometry.h>
+#include <Rocket/Core/String.h>
+#include <Rocket/Core/Texture.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -130,7 +130,7 @@ protected:
 private:
 	void GenerateMetrics(void);
 
-	bool BuildGlyphMap(const UnicodeRange& unicode_range);
+	bool BuildGlyphMap( const Rocket::Core::UnicodeRange &unicode_range );
 	void BuildGlyph(FontGlyph& glyph, FT_GlyphSlot ft_glyph);
 
 	int GetKerning(word lhs, word rhs) const;
@@ -143,7 +143,6 @@ private:
 
 	FT_Face ft_face;
 	uint8_t fonts_generated[ 0xFFFF / 256 / 8 ];
-
 
 	FontGlyphMap glyphs;
 
