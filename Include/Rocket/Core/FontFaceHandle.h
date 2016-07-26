@@ -36,18 +36,12 @@
 #include <Rocket/Core/UnicodeRange.h>
 #include <Rocket/Core/Font.h>
 #include <Rocket/Core/FontEffect.h>
-#include <Rocket/Core/FontGlyph.h>
 #include <Rocket/Core/Geometry.h>
 #include <Rocket/Core/String.h>
 #include <Rocket/Core/Texture.h>
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_SIZES_H
 
 namespace Rocket {
 namespace Core {
-
-class FontFaceLayer;
 
 /**
 	@author Peter Curry
@@ -60,11 +54,12 @@ public:
 	virtual ~FontFaceHandle();
 
 	/// Initialises the handle so it is able to render text.
-	/// @param[in] ft_face The FreeType face that this handle is rendering.
+	/// @param[in] ft_face The font provider that this handle is rendering.
+	/// @param[in] font_handle The handle coming from the font provider
 	/// @param[in] charset The comma-separated list of unicode ranges this handle must support.
 	/// @param[in] size The size, in points, of the face this handle should render at.
 	/// @return True if the handle initialised successfully and is ready for rendering, false if an error occured.
-	bool Initialise(FT_Face ft_face, const String& charset, int size);
+	bool Initialise(FontProviderInterface *font_provider, FontHandle font_handle);
 
 	/// Returns the average advance of all glyphs in this font face.
 	/// @return An approximate width of the characters in this font face.
@@ -84,10 +79,6 @@ public:
 	/// @return The font's baseline.
 	int GetBaseline() const;
 
-	/// Returns the font's glyphs.
-	/// @return The font's glyphs.
-	const FontGlyphMap& GetGlyphs() const;
-
 	/// Returns the width a string will take up if rendered with this handle.
 	/// @param[in] string The string to measure.
 	/// @param[in] prior_character The optionally-specified character that immediately precedes the string. This may have an impact on the string width due to kerning.
@@ -98,13 +89,6 @@ public:
 	/// @param[in] font_effects The list of font effects to generate the configuration for.
 	/// @return The index to use when generating geometry using this configuration.
 	int GenerateLayerConfiguration(FontEffectMap& font_effects);
-	/// Generates the texture data for a layer (for the texture database).
-	/// @param[out] texture_data The pointer to be set to the generated texture data.
-	/// @param[out] texture_dimensions The dimensions of the texture.
-	/// @param[out] texture_samples Pixel size of the texture, in bytes.
-	/// @param[in] layer_id The id of the layer to request the texture data from.
-	/// @param[in] texture_id The index of the texture within the layer to generate.
-	bool GenerateLayerTexture(const byte*& texture_data, Vector2i& texture_dimensions, int &texture_samples, FontEffect* layer_id, int layout_id, int texture_id);
 
 	/// Generates the geometry required to render a single line of text.
 	/// @param[out] geometry An array of geometries to generate the geometry into.
@@ -121,66 +105,13 @@ public:
 	/// @param[in] colour The colour to draw the line in.
 	void GenerateLine(Geometry* geometry, const Vector2f& position, int width, Font::Line height, const Colourb& colour) const;
 
-	/// Returns the font face's raw charset (the charset range as a string).
-	/// @return The font face's charset.
-	const String& GetRawCharset() const;
-	/// Returns the font face's charset.
-	/// @return The font face's charset.
-	const UnicodeRangeList& GetCharset() const;
-
 protected:
 	/// Destroys the handle.
 	virtual void OnReferenceDeactivate();
 
 private:
-	void GenerateMetrics(void);
-
-	bool BuildGlyphMap( const Rocket::Core::UnicodeRange &unicode_range );
-	void BuildGlyph(FontGlyph& glyph, FT_GlyphSlot ft_glyph);
-
-	int GetKerning(word lhs, word rhs) const;
-
-	// Generates (or shares) a layer derived from a font effect.
-	FontFaceLayer* GenerateLayer(FontEffect* font_effect);
-
-	typedef std::map< word, int > GlyphKerningMap;
-	typedef std::map< word, GlyphKerningMap > FontKerningMap;
-
-	FT_Size ft_size;
-	FT_Size backup_size;
-	uint8_t fonts_generated[ 0xFFFF / 256 / 8 ];
-
-	FontGlyphMap glyphs;
-
-	typedef std::map< const FontEffect*, FontFaceLayer* > FontLayerMap;
-	typedef std::map< String, FontFaceLayer* > FontLayerCache;
-	typedef std::vector< FontFaceLayer* > LayerConfiguration;
-	typedef std::vector< LayerConfiguration > LayerConfigurationList;
-
-	// The list of all font layers, index by the effect that instanced them.
-	FontFaceLayer* base_layer;
-	FontLayerMap layers;
-	// Each font layer that generated geometry or textures, indexed by the respective generation
-	// key.
-	FontLayerCache layer_cache;
-
-	// All configurations currently in use on this handle. New configurations will be generated as
-	// required.
-	LayerConfigurationList layer_configurations;
-
-	// The average advance (in pixels) of all of this face's glyphs.
-	int average_advance;
-
-	int size;
-	int x_height;
-	int line_height;
-	int baseline;
-
-	float underline_position;
-	float underline_thickness;
-
-	String raw_charset;
-	UnicodeRangeList charset;
+	FontHandle font_handle;
+	FontProviderInterface *font_provider;
 };
 
 }

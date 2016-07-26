@@ -42,14 +42,14 @@ int ROCKETCORE_API RocketStringFormatString(StringBase<char>& string, int max_si
 	if (max_size + 1 > INTERNAL_BUFFER_SIZE)
 	{
 		std::unique_ptr<char[]> buffer_ptr(new char[max_size + 1]);
-		int length = vsnprintf(buffer_ptr.get(), max_size, format, argument_list);
+		length = vsnprintf(buffer_ptr.get(), max_size, format, argument_list);
 		buffer_ptr[length >= 0 ? length : max_size] = '\0';
 		string = buffer_ptr.get();
 	}
 	else
 	{
 		char buffer[INTERNAL_BUFFER_SIZE];
-		int length = vsnprintf(buffer, max_size, format, argument_list);
+		length = vsnprintf(buffer, max_size, format, argument_list);
 		buffer[length >= 0 ? length : max_size] = '\0';
 		string = buffer;
 	}
@@ -79,11 +79,11 @@ int StringBase<char>::FormatString(StringBase<char>::size_type max_size, const c
 	va_list argument_list;
 	va_start(argument_list, fmt);
 
-	int length = RocketStringFormatString(*this, (int)max_size, fmt, argument_list);
+	int format_length = RocketStringFormatString(*this, (int)max_size, fmt, argument_list);
 
 	va_end(argument_list);
 
-	return length;
+	return format_length;
 }
 
 String operator+(const char* cstring, const String& string)

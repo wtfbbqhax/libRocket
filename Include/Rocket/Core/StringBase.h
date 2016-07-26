@@ -51,8 +51,6 @@ public:
 	StringBase(const T* string_start, const T* string_end);
 	StringBase(size_type length, const T character);
 	StringBase(size_type max_length, const T* fmt, ...);
-	// Move construct.
-	StringBase(StringBase<T>&& other);
 
 	~StringBase();
 
@@ -176,8 +174,6 @@ public:
 
 	inline StringBase<T>& operator=(const T* assign);
 	inline StringBase<T>& operator=(const StringBase<T>& assign);
-	// Move assign.
-	inline StringBase<T>& operator=(StringBase<T>&& rhs);
 
 	inline StringBase<T> operator+(const T* append) const;
 	inline StringBase<T> operator+(const StringBase<T>& append) const;
@@ -189,24 +185,13 @@ public:
 	inline const T& operator[](size_type index) const;
 	inline T& operator[](size_type index);
 
-	// Offer c_str() to make the interface somewhat more consistent with std::string.
-	// c_str() better sets expectations about what it does than CString()
-	// Having a consistent name with std::string also helps with generic code.
-	inline const T* c_str() const;
+protected:	
 
-protected:
-	// Obtain the local buffer without casting.
-	inline T* LocalBuffer();
-	inline const T* LocalBuffer() const;
-	// Is the Small String Optimization buffer in use.
-	inline bool IsUsingLocalBuffer() const;
-
-protected:
 	T* value;
 	size_type buffer_size;
 	size_type length;
 	mutable unsigned int hash;
-	static const size_type LOCAL_BUFFER_SIZE = 8;
+	static const size_type LOCAL_BUFFER_SIZE = 16;
 	char local_buffer[LOCAL_BUFFER_SIZE];
 
 	size_type GetLength(const T* string) const;
@@ -225,7 +210,7 @@ protected:
 	inline StringBase<T>& _Assign(const T* assign, size_type assign_length, size_type count = StringBase<T>::npos);
 	inline void _Insert(size_type index, const T* insert, size_type insert_length, size_type count = StringBase<T>::npos);
 };
-
+	
 #include "StringBase.inl"
 
 }

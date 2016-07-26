@@ -141,7 +141,8 @@ int ElementUtilities::GetLineHeight(Element* element)
 		return 0;
 
 	int line_height = font_face_handle->GetLineHeight();
-	float inch = element->GetRenderInterface()->GetPixelsPerInch();
+	Rocket::Core::RenderInterface* renderInterface = element->GetRenderInterface();
+	float inch = renderInterface->GetPixelsPerInch();
 	const Property* line_height_property = element->GetLineHeightProperty();
 
 	switch (line_height_property->unit)
@@ -153,6 +154,7 @@ int ElementUtilities::GetLineHeight(Element* element)
 	ROCKET_UNUSED_SWITCH_ENUM(Property::ABSOLUTE_UNIT);
 	ROCKET_UNUSED_SWITCH_ENUM(Property::PPI_UNIT);
 	ROCKET_UNUSED_SWITCH_ENUM(Property::RELATIVE_UNIT);
+	ROCKET_UNUSED_SWITCH_ENUM(Property::REM);
 	case Property::NUMBER:
 	case Property::EM:
 		// If the property is a straight number or an em measurement, then it scales the line height.
@@ -174,6 +176,8 @@ int ElementUtilities::GetLineHeight(Element* element)
 		return Math::Round(line_height_property->value.Get< float >() * inch * (1.0f / 72.0f));
 	case Property::PC:
 		return Math::Round(line_height_property->value.Get< float >() * inch * (1.0f / 6.0f));
+	case Property::DP:
+		return Math::RoundUp(line_height_property->value.Get< float >() * inch / renderInterface->GetBasePixelsPerInch());
 	}
 
 	return 0;

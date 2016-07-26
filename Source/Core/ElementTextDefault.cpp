@@ -107,13 +107,14 @@ void ElementTextDefault::OnRender()
 		float clip_right = (float)(clip_origin.x + clip_dimensions.x);
 		float clip_bottom = (float)(clip_origin.y + clip_dimensions.y);
 		float line_height = (float)GetFontFaceHandle()->GetLineHeight();
-		
+		float line_base = (float)GetFontFaceHandle()->GetBaseline();
+
 		render = false;
 		for (size_t i = 0; i < lines.size(); ++i)
 		{
 			const Line& line = lines[i];
 			float x = translation.x + line.position.x;
-			float y = translation.y + line.position.y;
+			float y = translation.y + line.position.y + line_base;
 
 			bool render_line = !(x > clip_right);
 			render_line = render_line && !(x + line.width < clip_left);
@@ -215,8 +216,9 @@ bool ElementTextDefault::GenerateLine(WString& line, int& line_length, float& li
 		if (break_at_line)
 		{
 			if (!line.Empty() &&
-				(line_width + token_width > maximum_line_width ||
-				 LastToken(next_token_begin, string_end, collapse_white_space, break_at_endline) && (line_width + token_width > maximum_line_width - right_spacing_width)))
+				( (line_width + token_width > maximum_line_width) ||
+				(LastToken(next_token_begin, string_end, collapse_white_space, break_at_endline) && (line_width + token_width > maximum_line_width - right_spacing_width)) )
+				)
 			{
 				return false;
 			}

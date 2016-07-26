@@ -70,13 +70,6 @@ ElementStyle::~ElementStyle()
 	delete cache;
 }
 
-static PropCounter prop_counter;
-
-PropCounter &ElementStyle::GetPropCounter()
-{
-	return prop_counter;
-}
-
 // Returns the element's definition, updating if necessary.
 const ElementDefinition* ElementStyle::GetDefinition()
 {
@@ -292,10 +285,6 @@ void ElementStyle::RemoveProperty(const String& name)
 // Returns one of this element's properties.
 const Property* ElementStyle::GetProperty(const String& name)
 {
-	if (prop_counter.find(name) == prop_counter.end())
-		prop_counter[name] = 0;
-	prop_counter[name] = prop_counter[name] + 1;
-
 	const Property* local_property = GetLocalProperty(name);
 	if (local_property != NULL)
 		return local_property;
@@ -368,7 +357,8 @@ float ElementStyle::ResolveProperty(const Property* property, float base_value)
 	// Values based on pixels-per-inch.
 	if (property->unit & Property::PPI_UNIT)
 	{
-		float inch = property->value.Get< float >() * element->GetRenderInterface()->GetPixelsPerInch();
+		Rocket::Core::RenderInterface* renderInterface = element->GetRenderInterface();
+		float inch = property->value.Get< float >() * renderInterface->GetPixelsPerInch();
 		
 		if (property->unit & Property::INCH) // inch
 			return inch;
@@ -380,6 +370,8 @@ float ElementStyle::ResolveProperty(const Property* property, float base_value)
 			return inch * (1.0f / 72.0f);
 		if (property->unit & Property::PC) // pica
 			return inch * (1.0f / 6.0f);
+		if (property->unit & Property::DP) // device-independent pixel
+			return (float)Math::RoundUp(inch / renderInterface->GetBasePixelsPerInch());
 	}
 
 	// We're not a numeric property; return 0.
@@ -456,18 +448,21 @@ float ElementStyle::ResolveProperty(const String& name, float base_value)
     // Values based on pixels-per-inch.
 	if (property->unit & Property::PPI_UNIT)
 	{
-		float inch = property->value.Get< float >() * element->GetRenderInterface()->GetPixelsPerInch();
+		Rocket::Core::RenderInterface* renderInterface = element->GetRenderInterface();
+		float inch = property->value.Get< float >() * renderInterface->GetPixelsPerInch();
 
 		if (property->unit & Property::INCH) // inch
 			return inch;
 		if (property->unit & Property::CM) // centimeter
-			return inch / 2.54f;
+			return inch * (1.0f / 2.54f);
 		if (property->unit & Property::MM) // millimeter
-			return inch / 25.4f;
+			return inch * (1.0f / 25.4f);
 		if (property->unit & Property::PT) // point
-			return inch / 72.0f;
+			return inch * (1.0f / 72.0f);
 		if (property->unit & Property::PC) // pica
-			return inch / 6.0f;
+			return inch * (1.0f / 6.0f);
+		if (property->unit & Property::DP) // device-independent pixel
+			return (float)Math::RoundUp(inch / renderInterface->GetBasePixelsPerInch());
 	}
 
 	// We're not a numeric property; return 0.
